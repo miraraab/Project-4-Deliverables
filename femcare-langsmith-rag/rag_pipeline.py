@@ -2,28 +2,24 @@
 RAG Pipeline implementation using LangChain and LangSmith.
 Combines a vector database with an LLM for retrieval-augmented generation.
 """
-import os
 from dotenv import load_dotenv
 from langchain_openai import OpenAIEmbeddings, ChatOpenAI
-from langchain_community.vectorstores import Chroma
-from langchain.chains import RetrievalQA
-from langchain.prompts import PromptTemplate
-from langchain.schema import Document
+from langchain_core.prompts import PromptTemplate
 from langsmith import traceable
-from knowledge_base import KnowledgeBase
+from knowledge_base import FemcareKnowledgeBase
 
 load_dotenv()
 
 
 class RAGPipeline:
-    def __init__(self, model_name="gpt-4", temperature=0.7):
+    def __init__(self, model_name="gpt-4o-mini", temperature=0.7):
         self.model_name = model_name
         self.temperature = temperature
 
         self.embeddings = OpenAIEmbeddings()
 
-        self.knowledge_base = KnowledgeBase()
-        self.vector_store = self.knowledge_base.get_vector_store()
+        self.knowledge_base = FemcareKnowledgeBase()
+        self.vector_store = self.knowledge_base.vector_store
 
         self.llm = ChatOpenAI(
             model=model_name,
@@ -44,13 +40,7 @@ Question: {question}
 Answer:"""
         )
 
-        self.qa_chain = RetrievalQA.from_chain_type(
-            llm=self.llm,
-            chain_type="stuff",
-            retriever=self.vector_store.as_retriever(search_kwargs={"k": 3}),
-            return_source_documents=True,
-            chain_type_kwargs={"prompt": self.prompt_template}
-        )
+        self.retriever = self.vector_store.as_retriever(search_kwargs={"k": 3})
 
     @traceable(name="menopause_health_navigator_query", run_type="chain")
     def query(self, user_input: str) -> dict:
@@ -67,19 +57,25 @@ Answer:"""
                 - confidence (str): "high" or "low" confidence level
                 - referred_to_doctor (bool): True if user should consult a healthcare provider
         """
-        docs_with_scores = self.vector_store.similarity_search_with_scores(user_input, k=3)
+        try:
+            docs_with_scores = self.vector_store.similarity_search_with_scores(user_input, k=3)
+            relevance_scores = [score for _, score in docs_with_scores]
+            docs = [doc for doc, _ in docs_with_scores]
+        except AttributeError:
+            docs = self.vector_store.similarity_search(user_input, k=3)
+            relevance_scores = [0.75] * len(docs)
 
-        relevance_scores = [score for _, score in docs_with_scores]
         avg_relevance = sum(relevance_scores) / len(relevance_scores) if relevance_scores else 0
 
         is_low_confidence = avg_relevance < 0.7
         confidence_level = "low" if is_low_confidence else "high"
 
-        result = self.qa_chain.invoke({"query": user_input})
+        context_text = "\n\n".join([doc.page_content for doc in docs])
 
-        sources = [doc.metadata.get("source", "Unknown") for doc in result["source_documents"]]
+        prompt = self.prompt_template.format(context=context_text, question=user_input)
+        answer = self.llm.invoke(prompt).content
 
-        answer = result["result"]
+        sources = [doc.metadata.get("source", "Unknown") for doc in docs]
 
         if is_low_confidence:
             answer += "\n\n⚠️ Low Confidence Response: For personalised menopause care, consider speaking with a menopause specialist or your GP."

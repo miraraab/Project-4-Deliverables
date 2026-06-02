@@ -1,94 +1,15 @@
 """
 Knowledge Base management using Chroma vector database.
-Handles document ingestion, embedding, and retrieval.
+Handles document ingestion, embedding, and retrieval for menopause health information.
 """
-import os
 from pathlib import Path
 from dotenv import load_dotenv
 from langchain_openai import OpenAIEmbeddings
-from langchain_community.vectorstores import Chroma
-from langchain.document_loaders import DirectoryLoader, TextLoader
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.schema import Document
+from langchain_chroma import Chroma
+from langchain_core.documents import Document
 from langsmith import traceable
 
 load_dotenv()
-
-
-class KnowledgeBase:
-    def __init__(self, persist_directory="./chroma_db", documents_directory="./documents"):
-        self.persist_directory = persist_directory
-        self.documents_directory = documents_directory
-        self.embeddings = OpenAIEmbeddings()
-
-        Path(persist_directory).mkdir(parents=True, exist_ok=True)
-
-        self.vector_store = None
-        self._initialize_vector_store()
-
-    def _initialize_vector_store(self):
-        """Initialize or load the vector store."""
-        if os.path.exists(os.path.join(self.persist_directory, "chroma.sqlite3")):
-            self.vector_store = Chroma(
-                persist_directory=self.persist_directory,
-                embedding_function=self.embeddings
-            )
-        else:
-            self.vector_store = Chroma(
-                persist_directory=self.persist_directory,
-                embedding_function=self.embeddings
-            )
-
-    def load_documents_from_directory(self):
-        """Load documents from the documents directory."""
-        if not os.path.exists(self.documents_directory):
-            os.makedirs(self.documents_directory)
-            print(f"Created documents directory at {self.documents_directory}")
-            return []
-
-        loader = DirectoryLoader(
-            self.documents_directory,
-            glob="**/*.txt",
-            loader_cls=TextLoader
-        )
-
-        documents = loader.load()
-        return documents
-
-    def ingest_documents(self):
-        """Load and ingest documents into the vector store."""
-        documents = self.load_documents_from_directory()
-
-        if not documents:
-            print("No documents found to ingest.")
-            return
-
-        text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=1000,
-            chunk_overlap=200
-        )
-
-        chunks = text_splitter.split_documents(documents)
-
-        self.vector_store.add_documents(chunks)
-        print(f"Successfully ingested {len(chunks)} document chunks.")
-
-    def get_vector_store(self):
-        """Get the vector store instance."""
-        return self.vector_store
-
-    def search(self, query: str, k: int = 3):
-        """
-        Search the knowledge base for relevant documents.
-
-        Args:
-            query: The search query
-            k: Number of results to return
-
-        Returns:
-            List of relevant documents
-        """
-        return self.vector_store.similarity_search(query, k=k)
 
 
 class FemcareKnowledgeBase:
