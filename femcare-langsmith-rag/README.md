@@ -111,7 +111,7 @@ All LLM calls and retrieval operations are automatically traced in LangSmith. Yo
 - Debug retrieval quality
 - Analyze conversation patterns
 
-Access your traces at: https://smith.langchain.com/
+Access your traces at: https://eu.smith.langchain.com/o/b1b7036f-bc62-4cd5-b9ee-3bc5f9a32a03
 
 ## Development
 
