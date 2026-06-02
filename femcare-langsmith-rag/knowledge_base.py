@@ -10,6 +10,7 @@ from langchain_community.vectorstores import Chroma
 from langchain.document_loaders import DirectoryLoader, TextLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.schema import Document
+from langsmith import traceable
 
 load_dotenv()
 
@@ -98,40 +99,40 @@ class FemcareKnowledgeBase:
 
     SAMPLE_DOCUMENTS = [
         {
-            "title": "PCOS Symptoms and Management",
-            "content": "Polycystic Ovary Syndrome (PCOS) is a common endocrine disorder affecting women of reproductive age, characterized by irregular menstrual cycles, elevated androgens, and polycystic ovarian morphology. Symptoms include hirsutism, acne, hair loss, weight gain, and subfertility. Management focuses on lifestyle modifications including weight loss and regular exercise, combined with medications such as metformin for metabolic improvement and oral contraceptives or spironolactone for hormonal regulation. Insulin resistance is a key feature in up to 70% of PCOS cases, making dietary management particularly important. [Source: WHO]"
+            "title": "Hot Flushes and Night Sweats",
+            "content": "Hot flushes affect about 8 in 10 women during menopause and are caused by falling estrogen levels affecting your body's temperature control center. You may feel sudden intense heat in your face, neck, and chest, often followed by heavy sweating and chills that can last 2-10 minutes. Common triggers include caffeine, alcohol, spicy foods, stress, and warm environments. Treatment options include hormone therapy (which works for 75-90% of women), lifestyle changes like dressing in layers and staying cool, or non-hormonal medications like SSRIs or gabapentin if you prefer to avoid hormones. [Source: WHO]"
         },
         {
-            "title": "Endometriosis Diagnosis and Treatment",
-            "content": "Endometriosis is a chronic condition characterized by the presence of endometrial tissue outside the uterus, affecting 5-10% of women in their reproductive years. The condition causes severe pelvic pain, dysmenorrhea, and infertility. Diagnosis is confirmed through laparoscopy, though MRI can be helpful for assessment of deep infiltrating disease. Treatment options include NSAIDs for pain management, combined hormonal contraceptives, progestins, and GnRH agonists for symptom relief and disease suppression. Surgical intervention may be necessary for advanced cases or assisted reproduction. [Source: EMA]"
+            "title": "Hormone Replacement Therapy (HRT)",
+            "content": "Hormone replacement therapy uses estrogen and/or progesterone to relieve menopause symptoms and comes in many forms including tablets, patches, creams, and rings. HRT is very effective for hot flushes, night sweats, vaginal dryness, and mood changes, with most women noticing improvement within weeks. Concerns from older studies about breast cancer and heart disease have been clarified by newer research—HRT is considered safe for most women when started early in menopause and doesn't increase breast cancer risk with estrogen-only therapy. Current medical guidelines recommend discussing HRT individually with your doctor to decide if it's right for you based on your symptoms and medical history. [Source: WHO 2023, DGGG]"
         },
         {
-            "title": "Perimenopause Signs and Management",
-            "content": "Perimenopause is the transition phase to menopause, typically lasting 4-10 years, during which estrogen and progesterone levels fluctuate significantly. Common symptoms include irregular menstrual cycles, hot flashes, night sweats, mood changes, and sleep disturbances. FSH testing can support diagnosis, though clinical history is often sufficient given irregular cycles. Management includes hormone therapy (HT) for symptom relief, lifestyle modifications, regular exercise, and cognitive behavioral therapy. Non-hormonal options like SSRIs and SNRIs are available for women who cannot tolerate or prefer to avoid HT. [Source: PubMed]"
+            "title": "Vaginal Dryness and Urinary Problems",
+            "content": "About 1 in 3 menopausal women experience vaginal dryness, irritation, or painful intercourse because falling estrogen levels thin the vaginal tissue and reduce natural moisture. Urinary symptoms like frequent urination, urgency, or discomfort are also common due to changes in the urinary tract tissues. These symptoms can significantly affect sexual function and quality of life, but they respond well to treatment. Non-hormonal options include vaginal moisturizers and lubricants, while hormonal treatments include vaginal estrogen creams or tablets with very minimal systemic absorption, or systemic HRT if you're already taking it for other symptoms. [Source: DGGG]"
         },
         {
-            "title": "Menstrual Cycle Irregularities",
-            "content": "Menstrual irregularities can manifest as amenorrhea, oligomenorrhea, polymenorrhea, or menorrhagia, with causes ranging from hormonal disorders to structural abnormalities. Initial evaluation includes assessment of pregnancy status, thyroid function, prolactin levels, and pelvic imaging. Polycystic ovaries, uterine fibroids, and thyroid disorders are among the most common etiologies. Treatment depends on the underlying cause and patient preferences, ranging from observation and lifestyle changes to hormonal therapy, NSAIDs for heavy bleeding, or surgical intervention. Proper diagnosis is essential as some irregularities indicate serious underlying conditions. [Source: PubMed]"
+            "title": "Protecting Your Bone Health",
+            "content": "During menopause, bone loss accelerates due to falling estrogen levels, putting you at increased risk of osteoporosis and fractures, especially in the first 5-8 years after your last period. One in three women over age 50 develops osteoporosis, which weakens bones and increases fracture risk. Prevention includes getting enough calcium (1000-1200 mg daily from diet or supplements), vitamin D (800-2000 IU daily), regular weight-bearing exercise like walking or strength training, and quitting smoking. A bone density scan (DXA) can check your bone health, and if needed, medications like bisphosphonates can help slow bone loss. [Source: PubMed, WHO]"
         },
         {
-            "title": "Iron Deficiency Anemia in Women",
-            "content": "Iron deficiency anemia is particularly prevalent in women of reproductive age due to menstrual blood loss, with a prevalence of 10-20% in non-pregnant women. Common symptoms include fatigue, shortness of breath, pale skin, and weakened immune function. Diagnosis requires measurement of serum iron, ferritin, and total iron-binding capacity, with transferrin saturation below 20% indicating iron deficiency. Treatment consists of oral iron supplementation (ferrous sulfate 325 mg daily) or intravenous iron for severe cases, alongside identification and management of the underlying cause. Heavy menstrual bleeding should be evaluated and treated to prevent recurrence. [Source: WHO]"
+            "title": "Heart Health and Menopause",
+            "content": "Before menopause, women have lower risk of heart disease than men, but this protection decreases after menopause as estrogen levels drop. After menopause, your cholesterol and blood pressure may increase, and your risk for heart disease rises significantly. To protect your heart, exercise regularly (150 minutes per week), eat a healthy diet, maintain a healthy weight, manage stress, and don't smoke. Talk to your doctor about checking your cholesterol and blood pressure regularly, especially if you have other risk factors like family history or diabetes. [Source: WHO, EMA]"
         },
         {
-            "title": "Hormonal Contraception Effects and Considerations",
-            "content": "Combined oral contraceptives containing ethinyl estradiol and progestins effectively prevent pregnancy while providing additional benefits including cycle regulation and acne improvement. Estrogen exposure carries a small but increased risk of venous thromboembolism, particularly in women over 35 who smoke. Progesterone-only methods like the mini-pill and implants are alternatives for women who cannot tolerate estrogen. Long-acting reversible contraceptives (IUDs and implants) offer excellent efficacy with minimal systemic effects. Individual assessment is crucial, as contraceptive choice depends on medical history, side effect profile tolerance, and personal preferences. [Source: EMA]"
+            "title": "Managing Brain Fog and Memory Changes",
+            "content": "About half of menopausal women report difficulty concentrating, memory problems, or 'brain fog' that can affect work and daily life. These changes are usually temporary and related to sleep disruption from night sweats and hormonal changes affecting your brain chemistry. You're not at higher risk of Alzheimer's disease just from menopause, though good brain health practices help—stay mentally active, exercise regularly, eat a healthy diet, get adequate sleep, and manage stress. If your cognitive symptoms are severe or getting worse, talk to your doctor about other possible causes. [Source: PubMed, NAMS]"
         },
         {
-            "title": "Thyroid Conditions in Women",
-            "content": "Autoimmune thyroid disease, particularly Hashimoto's thyroiditis, is 5-8 times more common in women than men, often presenting with hypothyroidism. Symptoms include fatigue, weight gain, cold intolerance, and hair loss, with diagnosis confirmed by elevated TSH and anti-TPO antibodies. Hypothyroidism is treated with levothyroxine replacement, with dose adjusted to maintain TSH in the target range based on individual patient factors. Hyperthyroidism, often from Graves' disease, requires antithyroid drugs, beta-blockers, or radioactive iodine. Regular monitoring is essential, particularly in women of reproductive age and during pregnancy, as thyroid disorders can affect fertility and fetal development. [Source: PubMed]"
+            "title": "Better Sleep During Menopause",
+            "content": "Sleep problems affect 4 in 10 menopausal women and are often caused by night sweats waking you up, hormonal changes affecting your sleep cycle, or anxiety. Getting better sleep is essential because poor sleep worsens other menopause symptoms, affects mood and concentration, and increases health risks. Helpful strategies include keeping your bedroom cool and dark, maintaining a regular sleep schedule, avoiding caffeine and alcohol, doing relaxation exercises, and regular exercise (but not right before bed). If night sweats are causing your sleep problems, treating the hot flushes with HRT or other medications often improves sleep significantly. [Source: NAMS, PubMed]"
         },
         {
-            "title": "Fertility and Menstrual Cycle Tracking",
-            "content": "Understanding the menstrual cycle is fundamental for fertility awareness and conception planning. The typical 28-day cycle comprises the follicular phase (days 1-14), ovulation (day 14), and luteal phase (days 15-28), with ovulation occurring approximately 14 days before the next menstrual period. Ovulation can be detected through basal body temperature tracking, cervical mucus changes, or LH surge detection with ovulation predictor kits. For women seeking pregnancy, timing intercourse during the fertile window (5 days before and day of ovulation) maximizes conception chances. Irregular cycles may indicate anovulation or other fertility issues requiring medical evaluation. [Source: WHO]"
+            "title": "Mood Changes, Anxiety, and Depression",
+            "content": "Depression and anxiety are more common during perimenopause, affecting about 1 in 10 women, and can be triggered or worsened by menopause-related hormonal changes and sleep disruption. You may feel persistent sadness, worry, loss of interest in activities you enjoy, or anxiety that wasn't there before. Regular exercise, good sleep, stress management, talking to a therapist, and treating hot flushes (which worsen mood symptoms) all help. Some antidepressants like paroxetine or venlafaxine work well for both depression and hot flushes, or HRT may help if you also have vasomotor symptoms. [Source: DGGG, PubMed]"
         },
         {
-            "title": "Hormonal Balance and Women's Health",
-            "content": "Hormonal balance is critical for maintaining reproductive health, bone density, cardiovascular function, and psychological well-being in women. Estrogen and progesterone regulate not only the menstrual cycle but also skin, bone, and cardiovascular health throughout a woman's lifespan. Hormonal imbalances can result from thyroid dysfunction, adrenal insufficiency, PCOS, or premature ovarian insufficiency. Assessment typically includes measurement of FSH, LH, estradiol, progesterone, and testosterone levels. Management addresses the underlying cause through lifestyle modifications, hormonal therapy, or treatment of specific conditions affecting hormone regulation. [Source: PubMed]"
+            "title": "Menopause at Work",
+            "content": "Nearly half of working women report that menopause symptoms affect their job performance, concentration, or attendance. In Germany and EU countries, employers are legally required to provide reasonable adjustments if menopause symptoms significantly impact your work. Reasonable adjustments might include flexible hours, remote work options, temperature control (like positioning near windows or using fans), access to rest areas, or adjusted break times. You can discuss specific symptoms and needs with your HR department or occupational health service without sharing all details. Knowing your legal rights and documenting how symptoms affect your work helps when requesting accommodations. [Source: DGGG, EU Occupational Health Guidelines]"
         }
     ]
 
@@ -174,6 +175,7 @@ class FemcareKnowledgeBase:
         vector_store.add_documents(documents)
         print(f"Loaded {len(documents)} sample medical documents into knowledge base.")
 
+    @traceable(name="get_menopause_retriever", run_type="chain")
     def get_retriever(self, k: int = 3):
         """
         Get a LangChain retriever for the knowledge base.
@@ -186,6 +188,7 @@ class FemcareKnowledgeBase:
         """
         return self.vector_store.as_retriever(search_kwargs={"k": k})
 
+    @traceable(name="search_knowledge_base", run_type="retriever")
     def search(self, query: str, k: int = 3):
         """
         Search the knowledge base for relevant documents.

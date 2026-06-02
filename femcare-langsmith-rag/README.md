@@ -1,10 +1,11 @@
-# FemCare LangSmith RAG
+# Menopause Health Navigator - LangSmith RAG
 
-A Retrieval-Augmented Generation (RAG) application for femcare health information, built with LangChain and integrated with LangSmith for observability and tracing.
+A Retrieval-Augmented Generation (RAG) application for comprehensive menopause health information, built with LangChain and integrated with LangSmith for observability and tracing.
 
 ## Features
 
-- **Retrieval-Augmented Generation**: Combines a vector database with GPT-4 for accurate, context-grounded answers
+- **Menopause-Focused Knowledge Base**: Comprehensive coverage of vasomotor symptoms, HRT, bone health, cardiovascular changes, and workplace considerations
+- **Retrieval-Augmented Generation**: Combines a vector database with GPT-4 for accurate, evidence-based menopause health information
 - **LangSmith Integration**: Full observability and tracing of all LLM calls and retrieval operations
 - **Vector Database**: Uses Chroma for efficient semantic search
 - **Modular Design**: Separate modules for RAG pipeline, knowledge base, and main application
@@ -49,7 +50,7 @@ femcare-langsmith-rag/
 - `OPENAI_API_KEY`: Required. Your OpenAI API key for GPT-4 access
 - `LANGCHAIN_API_KEY`: Required. Your LangSmith API key for tracing
 - `LANGCHAIN_TRACING_V2`: Set to `true` to enable LangSmith tracing
-- `LANGCHAIN_PROJECT`: Project name in LangSmith (default: `femcare-health-navigator`)
+- `LANGCHAIN_PROJECT`: Project name in LangSmith (default: `menopause-health-navigator`)
 - `LANGCHAIN_ENDPOINT`: LangSmith API endpoint (default: `https://api.smith.langchain.com`)
 
 ## Usage
@@ -60,7 +61,7 @@ femcare-langsmith-rag/
 python main.py
 ```
 
-The application will start an interactive prompt where you can ask femcare-related questions.
+The application will start an interactive prompt where you can ask menopause-related health questions. The knowledge base includes evidence-based medical information on vasomotor symptoms, hormone replacement therapy, bone health, cardiovascular changes, cognitive symptoms, sleep disruption, mood changes, and workplace considerations.
 
 ### Loading Documents
 
